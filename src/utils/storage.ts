@@ -3,6 +3,7 @@
 // also technically chrome storage API is static and not instance based. Multiple storage manager instances will end up communicating with same chrome API
 
 import { SavedSearch, AppSettings, StorageData } from "./types";
+import { version } from '../../package.json'
 
 // Will be used by the worker
 export class StorageManager {
@@ -11,7 +12,7 @@ export class StorageManager {
 
     static async getAllSearches(): Promise<SavedSearch[]> {
         const result = await chrome.storage.local.get(this.SEARCH_KEY);
-        return result[this.SEARCH_KEY] || [];
+        return (result[this.SEARCH_KEY] as SavedSearch[]) || [];
     }
 
     static async getSearch(id: string): Promise<SavedSearch | undefined> {
@@ -20,8 +21,9 @@ export class StorageManager {
         return search
     }
 
-    static async searchExists(): Promise<boolean> {
-        return false
+    static async searchExistsByUrl(url: string): Promise<boolean> {
+        const searches = await this.getAllSearches();
+        return searches.some(s => s.url === url);
     }
 
     static async saveSearch(search: Omit<SavedSearch, "id" | "timestamp" | "order">): Promise<void> {
@@ -66,24 +68,34 @@ export class StorageManager {
     // Settings Storage
     static async getSettings() : Promise<AppSettings>{
         const result = await chrome.storage.local.get(this.SETTINGS_KEY)
-        // TODO FIX LINTER ERRORS
-        return result[this.SETTINGS_KEY] || {
+        return (result[this.SETTINGS_KEY] as AppSettings) || {
             preventNativeBookmark: false,
             titleFormat: 'compact'
         }
     }
 
-    static async updateSettings() {
-
+    static async updateSettings(settings: Partial<AppSettings>): Promise<void> {
+        const current = await this.getSettings();
+        await chrome.storage.local.set({
+            [this.SETTINGS_KEY]: {...current, ...settings}, 
+        });
     }
 
 
     // Export Import JSON searches
-    static async exportData() {
-
+    static async exportData(): Promise<string> {
+        const searches = await this.getAllSearches();
+        const settings = await this.getSettings();
+        return JSON.stringify({searches, settings, version: version })
     }
 
-    static async importData() {
-
+    static async importData(jsonString: string): Promise<void> {
+        const data: StorageData & { version: string } = JSON.parse(jsonString);
+        if (data.searches) {
+            await chrome.storage.local.set({ [this.SEARCH_KEY]: data.searches});
+        }
+        if (data.settings) {
+            await chrome.storage.local.set({ [this.SETTINGS_KEY]: data.settings });
+        }
     }
 }

@@ -22,7 +22,7 @@ export default defineManifest({
   ],
   background: {
     type: "module",
-    service_worker: "src/worker.ts"
+    service_worker: "src/background.ts"
   },
   action: {
     default_icon: {

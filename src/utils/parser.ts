@@ -12,12 +12,6 @@ interface ParsedParams {
 }
 
 export class LinkedInSearchParser {
-  private static TIME_MAP: Record<string, string> = {
-    r86400: "Last 24h",
-    r604800: "Last week",
-    r2592000: "Last month",
-  };
-
   private static EXPERIENCE_MAP: Record<string, string> = {
     "1": "Internship",
     "2": "Entry",

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>LinkedIn Search Saver - Full View</title>
+    <script src="../tailwindcss_cdn.js"></script>
+    <style>
+        .drag-over {
+            border: 2px dashed #3B82F6;
+            background-color: #EFF6FF;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Saved LinkedIn Searches</h1>
+            <div class="space-x-2">
+                <button id="exportBtn"
+                    class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Export</button>
+                <button id="importBtn"
+                    class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Import</button>
+                <button id="settingsBtn"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Settings</button>
+            </div>
+        </div>
+
+        <div id="searchList" class="space-y-3"></div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <h2 class="text-xl font-bold mb-4">Settings</h2>
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="preventBookmark" class="mr-2">
+                        <span>Prevent native bookmarking on LinkedIn searches</span>
+                    </label>
+                    <div>
+                        <label class="block mb-2">Title Format:</label>
+                        <select id="titleFormat" class="border rounded px-3 py-2 w-full">
+                            <option value="compact">Compact (SWE | SF | Last 24h)</option>
+                            <option value="verbose">Verbose (Software Engineer in San Francisco)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-2">
+                    <button id="closeSettings" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                    <button id="saveSettings"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <input type="file" id="importFile" accept=".json" class="hidden">
+    </div>
+
+    <script type="module" src="fullpage.js"></script>
+</body>
+
+</html>

@@ -6,9 +6,9 @@ export default defineManifest({
   name: pkg.name,
   version: pkg.version,
   icons: {
-    16: "public/icon16.png",
-    48: "public/icon48.png",
-    128: "public/icon128.png",
+    16: "public/icon16.jpeg",
+    48: "public/icon48.jpeg",
+    128: "public/icon128.jpeg",
   },
   permissions: [
     // 'contentSettings', Ideally i can work without this
@@ -24,9 +24,9 @@ export default defineManifest({
   },
   action: {
     default_icon: {
-      16: "public/icon16.png",
-      48: "public/icon48.png",
-      128: "public/icon128.png",
+      16: "public/icon16.jpeg",
+      48: "public/icon48.jpeg",
+      128: "public/icon128.jpeg",
     },
     default_popup: "src/popup/popup.html",
   },

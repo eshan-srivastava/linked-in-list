@@ -142,7 +142,7 @@ function handleDrop(e: DragEvent) {
   }
 }
 
-function handleDragEnd(e: DragEvent) {
+function handleDragEnd(_: DragEvent) {
   if (draggedElement) {
     draggedElement.style.opacity = "1";
     draggedElement = null;

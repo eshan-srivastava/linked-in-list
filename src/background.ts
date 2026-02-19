@@ -5,7 +5,20 @@ function isLinkedInSearch(url: string): boolean {
   return url.includes("linkedin.com/search/");
 }
 
-async function updateBadgeForTab(tab: chrome.tabs.Tab) {}
+async function updateBadgeForTab(tab: chrome.tabs.Tab) {
+  if (!tab.url || !tab.id) return;
+
+  if (isLinkedInSearch(tab.url)) {
+    const exists = await StorageManager.searchExistsByUrl(tab.url);
+    chrome.action.setBadgeText({ text: exists ? "✓" : "+", tabId: tab.id });
+    chrome.action.setBadgeBackgroundColor({
+      color: exists ? "#10B981" : "#3B82F6",
+      tabId: tab.id,
+    });
+  } else {
+    chrome.action.setBadgeText({ text: "", tabId: tab.id });
+  }
+}
 
 // Performs the save search flow
 async function saveCurrentSearch(url: string) {
@@ -30,7 +43,7 @@ async function saveCurrentSearch(url: string) {
 }
 
 // Starts the loop to add listener for extension badge if tab switch is complete
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
   if (changeInfo.status === "complete") {
     await updateBadgeForTab(tab);
   }
@@ -63,7 +76,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 });
 
 // Handle saving bookmark via UI
-chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
+chrome.bookmarks.onCreated.addListener(async (_, bookmark) => {
   const settings = await StorageManager.getSettings();
   if (
     !settings.preventNativeBookmark &&

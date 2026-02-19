@@ -1,6 +1,6 @@
 import { StorageManager } from "../utils/storage";
 import { LinkedInSearchParser } from "../utils/parser";
-import "./content.css"; // We will create this small file for shadow DOM styles
+// import "./content.css"; // We will create this small file for shadow DOM styles
 
 console.log("LinkedIn Search Saver: Content script loaded");
 

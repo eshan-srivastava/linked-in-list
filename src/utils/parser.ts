@@ -41,9 +41,24 @@ export class LinkedInSearchParser {
     if (timeStr == null || timeStr == "") {
       return undefined;
     }
-    const removeR = timeStr.slice(1);
-    //convert to number, convert to seconds, subtract from current
-    return removeR;
+    const secondsStr = timeStr.slice(1);
+    const totalSeconds = parseInt(secondsStr, 10);
+    if (isNaN(totalSeconds)) {
+      return undefined;
+    }
+
+    const days = Math.floor(totalSeconds / 86400);
+    let remaining = totalSeconds % 86400;
+    const hours = Math.floor(remaining / 3600);
+    remaining = remaining % 3600;
+    const minutes = Math.floor(remaining / 60);
+
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days} Days`);
+    if (hours > 0) parts.push(`${hours} Hours`);
+    if (minutes > 0) parts.push(`${minutes} minutes`);
+
+    return parts.join(" ") || "0 minutes";
   }
 
   private static parseLocation(geoUrn: string | null): string | undefined {

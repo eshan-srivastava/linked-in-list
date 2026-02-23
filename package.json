@@ -9,13 +9,14 @@
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.3",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/chrome": "^0.1.1",
     "@types/node": "^24.0.15",
+    "autoprefixer": "^10.4.24",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
     "typescript": "~5.8.3",
     "vite": "^7.0.5",
-    "vite-plugin-zip-pack": "^1.2.4",
-    "@tailwindcss/vite": "^4.1.18",
-    "tailwindcss": "^4.1.18"
-  },
-  "dependencies": {}
+    "vite-plugin-zip-pack": "^1.2.4"
+  }
 }

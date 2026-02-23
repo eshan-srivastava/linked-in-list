@@ -11,9 +11,25 @@
             background-color: #EFF6FF;
         }
     </style>
+    <script>
+        // IMMEDIATE THEME CHECK
+        // 1. Check if user has a saved preference
+        const storedTheme = localStorage.getItem('theme');
+
+        // 2. Check system preference
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // 3. Apply logic: Use stored if exists, otherwise system
+        if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body
+    class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200 w-100 m-0 p-0 min-h-screen">
     <div class="max-w-4xl mx-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Saved LinkedIn Searches</h1>

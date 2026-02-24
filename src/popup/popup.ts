@@ -13,7 +13,7 @@ async function init() {
 
   document.getElementById("openFullPage")?.addEventListener("click", () => {
     chrome.tabs.create({
-      url: chrome.runtime.getURL("fullpage/fullpage.html"),
+      url: chrome.runtime.getURL("src/fullpage/fullpage.html"),
     });
   });
 

@@ -6,13 +6,13 @@ export default defineManifest({
   name: pkg.name,
   version: pkg.version,
   icons: {
-    16: "public/icon16.jpeg",
-    48: "public/icon48.jpeg",
-    128: "public/icon128.jpeg",
+    16: "icon16.jpeg",
+    48: "icon48.jpeg",
+    128: "icon128.jpeg",
   },
   permissions: [
     // 'contentSettings', Ideally i can work without this
-    "sidePanel",
+    // "sidePanel",
     "storage",
     "bookmarks",
     "activeTab",
@@ -24,9 +24,9 @@ export default defineManifest({
   },
   action: {
     default_icon: {
-      16: "public/icon16.jpeg",
-      48: "public/icon48.jpeg",
-      128: "public/icon128.jpeg",
+      16: "icon16.jpeg",
+      48: "icon48.jpeg",
+      128: "icon128.jpeg",
     },
     default_popup: "src/popup/popup.html",
   },

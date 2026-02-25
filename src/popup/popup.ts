@@ -1,5 +1,6 @@
 import { StorageManager } from "../utils/storage";
 import { SavedSearch } from "../utils/types";
+import { LinkedInSearchParser } from "../utils/parser";
 
 const ITEMS_PER_PAGE = 10;
 let currentPage = 1;
@@ -11,10 +12,53 @@ async function init() {
   );
   renderPage();
 
+  // Check active tab and setup Add Current Page button
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const isLinkedInSearch =
+    !!tab?.url && tab.url.includes("linkedin.com/search/");
+  const addCurrentPageBtn = document.getElementById(
+    "addCurrentPage",
+  ) as HTMLButtonElement;
+  addCurrentPageBtn.disabled = !isLinkedInSearch;
+  if (!isLinkedInSearch) {
+    addCurrentPageBtn.classList.add("opacity-50", "cursor-not-allowed");
+  }
+
   document.getElementById("openFullPage")?.addEventListener("click", () => {
     chrome.tabs.create({
       url: chrome.runtime.getURL("src/fullpage/fullpage.html"),
     });
+  });
+
+  // Add Current Page button handler
+  addCurrentPageBtn?.addEventListener("click", async () => {
+    const [currentTab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (!currentTab?.url || !currentTab.url.includes("linkedin.com/search/")) {
+      return; // Should not happen since button is disabled, but safety check
+    }
+
+    const settings = await StorageManager.getSettings();
+    const parsed = LinkedInSearchParser.parseUrl(currentTab.url);
+    const title = LinkedInSearchParser.generateTitle(
+      parsed,
+      settings.titleFormat,
+    );
+
+    await StorageManager.saveSearch({
+      url: currentTab.url,
+      title,
+      notes: "",
+    });
+
+    // Refresh the list
+    allSearches = (await StorageManager.getAllSearches()).sort(
+      (a, b) => a.order - b.order,
+    );
+    currentPage = 1; // Reset to first page to show the new item
+    renderPage();
   });
 
   document.getElementById("prevPage")?.addEventListener("click", () => {

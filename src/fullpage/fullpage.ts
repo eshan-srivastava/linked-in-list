@@ -2,13 +2,27 @@ import { StorageManager } from "../utils/storage";
 import { SavedSearch } from "../utils/types";
 
 let searches: SavedSearch[] = [];
+let filteredSearches: SavedSearch[] = [];
 let draggedElement: HTMLElement | null = null;
 let draggedSearchId: string | null = null;
 
 async function init() {
   await loadSearches();
-  renderSearches();
+  refreshList();
   setupEventListeners();
+}
+
+function refreshList() {
+  const query =
+    (
+      document.getElementById("searchInput") as HTMLInputElement
+    )?.value.toLowerCase() || "";
+  filteredSearches = searches.filter(
+    (s) =>
+      s.title.toLowerCase().includes(query) ||
+      s.notes.toLowerCase().includes(query),
+  );
+  renderSearches();
 }
 
 async function loadSearches() {
@@ -20,12 +34,12 @@ async function loadSearches() {
 function renderSearches() {
   const listEl = document.getElementById("searchList")!;
   listEl.innerHTML =
-    searches.length === 0
-      ? '<p class="text-gray-500 text-center py-8">No saved searches yet. Visit LinkedIn and save some searches!</p>'
-      : searches.map((search) => createSearchCard(search)).join("");
+    filteredSearches.length === 0
+      ? '<p class="text-gray-500 text-center py-8">No saved searches found. Visit LinkedIn and save some searches!</p>'
+      : filteredSearches.map((search) => createSearchCard(search)).join("");
 
   // Add event listeners for each card
-  searches.forEach((search) => {
+  filteredSearches.forEach((search) => {
     const card = document.getElementById(`card-${search.id}`);
     if (card) {
       setupCardListeners(card, search);
@@ -81,7 +95,7 @@ function setupCardListeners(card: HTMLElement, search: SavedSearch) {
       if (confirm("Delete this search?")) {
         await StorageManager.deleteSearch(search.id);
         await loadSearches();
-        renderSearches();
+        refreshList();
       }
     });
 
@@ -102,7 +116,7 @@ function setupCardListeners(card: HTMLElement, search: SavedSearch) {
       if (notes !== null) {
         await StorageManager.updateSearch(search.id, { notes });
         await loadSearches();
-        renderSearches();
+        refreshList();
       }
     });
 }
@@ -138,7 +152,7 @@ function handleDrop(e: DragEvent) {
 
     // Save new order
     StorageManager.reorderSearches(searches.map((s) => s.id));
-    renderSearches();
+    refreshList();
   }
 }
 
@@ -154,8 +168,12 @@ function handleDragEnd(_: DragEvent) {
     el.classList.remove("drag-over");
   });
 }
-
 function setupEventListeners() {
+  // Searchbar input
+  document.getElementById("searchInput")?.addEventListener("input", () => {
+    refreshList();
+  });
+
   // Export
   document.getElementById("exportBtn")?.addEventListener("click", async () => {
     const data = await StorageManager.exportData();
@@ -182,7 +200,7 @@ function setupEventListeners() {
         try {
           await StorageManager.importData(text);
           await loadSearches();
-          renderSearches();
+          refreshList();
           alert("Import successful!");
         } catch (err) {
           alert("Import failed: Invalid file format");

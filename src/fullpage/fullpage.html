@@ -11,6 +11,22 @@
             border: 2px dashed #3B82F6;
             background-color: #EFF6FF;
         }
+
+        @keyframes fadeInZoom {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-dropdown {
+            animation: fadeInZoom 0.15s ease-out;
+        }
     </style>
 </head>
 
@@ -50,8 +66,8 @@
 
         <div id="searchList" class="space-y-3"></div>
 
-        <!-- Settings Modal -->
-        <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <!-- Settings Modal (keeping for now, but will eventually use universal) -->
+        <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
             <div class="bg-white rounded-lg p-6 max-w-md w-full">
                 <h2 class="text-xl font-bold mb-4">Settings</h2>
                 <div class="space-y-4">
@@ -75,7 +91,72 @@
             </div>
         </div>
 
+        <!-- Universal Modal -->
+        <div id="universalModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all mx-4">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                    <h3 id="modalTitle" class="text-lg font-bold text-gray-800"></h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="modalContent" class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+                    <!-- Content will be injected here -->
+                </div>
+                <div id="modalFooter" class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                    <button id="modalCancel"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+                    <button id="modalSave"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Save</button>
+                </div>
+            </div>
+        </div>
+
         <input type="file" id="importFile" accept=".json" class="hidden">
+    </div>
+
+    <!-- Dropdown Menu Template (hidden) -->
+    <div id="optionsDropdown"
+        class="fixed hidden bg-white border border-gray-200 rounded-lg shadow-xl py-2 w-48 z-50 animate-dropdown">
+        <button data-action="editTitle"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                </path>
+            </svg>
+            Edit Title
+        </button>
+        <button data-action="addNotes" id="optsNotesBtn"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+            </svg>
+            <span id="optsNotesBtnText">Add Notes</span>
+        </button>
+        <button data-action="viewDetails"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            View Details
+        </button>
+        <hr class="my-1 border-gray-100">
+        <button data-action="delete"
+            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                </path>
+            </svg>
+            Delete Search
+        </button>
     </div>
 
     <script type="module" src="./fullpage.ts"></script>

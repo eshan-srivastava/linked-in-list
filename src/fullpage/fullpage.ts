@@ -5,11 +5,14 @@ let searches: SavedSearch[] = [];
 let filteredSearches: SavedSearch[] = [];
 let draggedElement: HTMLElement | null = null;
 let draggedSearchId: string | null = null;
+let activeSearchId: string | null = null;
 
 async function init() {
   await loadSearches();
   refreshList();
   setupEventListeners();
+  setupUniversalModalListeners();
+  setupClickOutsideListeners();
 }
 
 function refreshList() {
@@ -47,32 +50,32 @@ function renderSearches() {
   });
 }
 
-function createSearchCard(search: SavedSearch): string {
-  const date = new Date(search.timestamp).toLocaleString();
+function createSearchCard(searchItem: SavedSearch): string {
+  const date = new Date(searchItem.timestamp).toLocaleString();
   return `
     <div 
-      id="card-${search.id}" 
-      data-id="${search.id}"
+      id="card-${searchItem.id}" 
+      data-id="${searchItem.id}"
       draggable="true"
       class="p-4 bg-white border rounded-lg hover:shadow-lg transition-shadow cursor-move"
     >
       <div class="flex justify-between items-start">
         <div class="flex-1">
-          <a href="${search.url}" target="_blank" class="text-lg font-medium text-blue-600 hover:underline">
-            ${escapeHtml(search.title)}
+          <a href="${searchItem.url}" target="_blank" class="text-lg font-medium text-blue-600 hover:underline">
+            ${escapeHtml(searchItem.title)}
           </a>
           <p class="text-sm text-gray-500 mt-1">${date}</p>
-          ${search.notes ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(search.notes)}</p>` : ""}
-          <button id="edit-notes-${search.id}" class="text-xs text-blue-500 hover:underline mt-2">
-            ${search.notes ? "Edit notes" : "Add notes"}
+          ${searchItem.notes ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(searchItem.notes)}</p>` : ""}
+          <button id="edit-notes-${searchItem.id}" class="text-xs text-blue-500 hover:underline mt-2">
+            ${searchItem.notes ? "Edit notes" : "Add notes"}
           </button>
+          
         </div>
-        <div class="flex space-x-2 ml-4">
-          <button id="inspect-${search.id}" class="px-2 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200">
-            Inspect
-          </button>
-          <button id="delete-${search.id}" class="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200">
-            Remove
+        <div class="flex items-center ml-4">
+          <button id="options-${searchItem.id}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+            </svg>
           </button>
         </div>
       </div>
@@ -87,38 +90,200 @@ function setupCardListeners(card: HTMLElement, search: SavedSearch) {
   card.addEventListener("drop", handleDrop);
   card.addEventListener("dragend", handleDragEnd);
 
-  // Button events
-  document
-    .getElementById(`delete-${search.id}`)
-    ?.addEventListener("click", async (e) => {
-      e.stopPropagation();
+  // Options button
+  const optionsBtn = document.getElementById(`options-${search.id}`);
+  optionsBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showOptionsDropdown(optionsBtn, search);
+  });
+
+  // Add/Edit notes button
+  const notesBtn = document.getElementById(`edit-notes-${search.id}`);
+  notesBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showModal(search.notes ? "Edit Notes" : "Add Notes", search, "addNotes");
+  });
+}
+
+function showOptionsDropdown(anchor: HTMLElement, savedSearch: SavedSearch) {
+  activeSearchId = savedSearch.id;
+  const dropdown = document.getElementById("optionsDropdown")!;
+  const rect = anchor.getBoundingClientRect();
+
+  const optsNotesBtnText = document.getElementById("optsNotesBtnText")!;
+  optsNotesBtnText.textContent = savedSearch.notes ? "Edit notes" : "Add notes";
+
+  dropdown.style.top = `${rect.bottom + window.scrollY + 5}px`;
+  dropdown.style.left = `${rect.right - 192}px`; // 192px is w-48
+  dropdown.classList.remove("hidden");
+}
+
+function setupClickOutsideListeners() {
+  document.addEventListener("click", (e) => {
+    const dropdown = document.getElementById("optionsDropdown")!;
+    if (!dropdown.contains(e.target as Node)) {
+      dropdown.classList.add("hidden");
+    }
+  });
+
+  // Action clicks inside dropdown
+  const dropdown = document.getElementById("optionsDropdown")!;
+  dropdown.querySelectorAll("button[data-action]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const action = (btn as HTMLElement).dataset.action;
+      if (action && activeSearchId) {
+        handleDropdownAction(action, activeSearchId);
+      }
+      dropdown.classList.add("hidden");
+    });
+  });
+}
+
+async function handleDropdownAction(action: string, searchId: string) {
+  const search = searches.find((s) => s.id === searchId);
+  if (!search) return;
+
+  switch (action) {
+    case "editTitle":
+      showModal("Edit Title", search, "editTitle");
+      break;
+    case "addNotes":
+      showModal(search.notes ? "Edit Notes" : "Add Notes", search, "addNotes");
+      break;
+    case "viewDetails":
+      showModal("Search Details", search, "viewDetails");
+      break;
+    case "delete":
       if (confirm("Delete this search?")) {
         await StorageManager.deleteSearch(search.id);
         await loadSearches();
         refreshList();
       }
-    });
+      break;
+  }
+}
 
-  document
-    .getElementById(`inspect-${search.id}`)
-    ?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      alert(
-        `URL: ${search.url}\n\nID: ${search.id}\n\nTimestamp: ${new Date(search.timestamp).toISOString()}`,
-      );
-    });
+let currentModalSearch: SavedSearch | null = null;
+let currentModalType: string | null = null;
 
-  document
-    .getElementById(`edit-notes-${search.id}`)
-    ?.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      const notes = prompt("Enter notes for this search:", search.notes);
-      if (notes !== null) {
-        await StorageManager.updateSearch(search.id, { notes });
-        await loadSearches();
-        refreshList();
+function showModal(title: string, search: SavedSearch, type: string) {
+  currentModalSearch = search;
+  currentModalType = type;
+
+  const modal = document.getElementById("universalModal")!;
+  const modalTitle = document.getElementById("modalTitle")!;
+  const modalContent = document.getElementById("modalContent")!;
+  const modalSave = document.getElementById("modalSave") as HTMLButtonElement;
+
+  modalTitle.textContent = title;
+  modalContent.innerHTML = "";
+  modalSave.classList.remove("hidden");
+
+  if (type === "editTitle") {
+    modalContent.innerHTML = `
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Search Title</label>
+        <input type="text" id="modalInput" maxlength="256" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${escapeHtml(search.title)}">
+        <p class="text-xs text-gray-400 text-right"><span id="charCount">0</span>/256</p>
+      </div>
+    `;
+    const input = document.getElementById("modalInput") as HTMLInputElement;
+    const count = document.getElementById("charCount")!;
+    input.addEventListener(
+      "input",
+      () => (count.textContent = input.value.length.toString()),
+    );
+    count.textContent = input.value.length.toString();
+  } else if (type === "addNotes") {
+    modalContent.innerHTML = `
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Notes</label>
+        <textarea id="modalTextarea" maxlength="1024" rows="5" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none">${escapeHtml(search.notes)}</textarea>
+        <p class="text-xs text-gray-400 text-right"><span id="charCount">0</span>/1024</p>
+      </div>
+    `;
+    const textarea = document.getElementById(
+      "modalTextarea",
+    ) as HTMLTextAreaElement;
+    const count = document.getElementById("charCount")!;
+    textarea.addEventListener(
+      "input",
+      () => (count.textContent = textarea.value.length.toString()),
+    );
+    count.textContent = textarea.value.length.toString();
+  } else if (type === "viewDetails") {
+    modalSave.classList.add("hidden");
+    const date = new Date(search.timestamp).toLocaleString();
+    modalContent.innerHTML = `
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Title</label>
+          <p class="text-gray-900 font-medium">${escapeHtml(search.title)}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">URL</label>
+          <a href="${search.url}" target="_blank" class="text-blue-600 hover:underline break-all text-sm">${escapeHtml(search.url)}</a>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Saved On</label>
+          <p class="text-gray-700 text-sm">${date}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Notes</label>
+          <p class="text-gray-700 text-sm whitespace-pre-wrap">${search.notes ? escapeHtml(search.notes) : "No notes added."}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Internal ID</label>
+          <p class="text-gray-400 text-[10px] font-mono">${search.id}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function setupUniversalModalListeners() {
+  const modal = document.getElementById("universalModal")!;
+  const closeBtn = document.getElementById("closeModal")!;
+  const cancelBtn = document.getElementById("modalCancel")!;
+  const saveBtn = document.getElementById("modalSave")!;
+
+  const closeModal = () => {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  };
+
+  closeBtn.addEventListener("click", closeModal);
+  cancelBtn.addEventListener("click", closeModal);
+
+  saveBtn.addEventListener("click", async () => {
+    if (!currentModalSearch || !currentModalType) return;
+
+    if (currentModalType === "editTitle") {
+      const input = document.getElementById("modalInput") as HTMLInputElement;
+      const title = input.value.trim();
+      if (title) {
+        await StorageManager.updateSearch(currentModalSearch.id, { title });
       }
-    });
+    } else if (currentModalType === "addNotes") {
+      const textarea = document.getElementById(
+        "modalTextarea",
+      ) as HTMLTextAreaElement;
+      const notes = textarea.value.trim();
+      await StorageManager.updateSearch(currentModalSearch.id, { notes });
+    }
+
+    await loadSearches();
+    refreshList();
+    closeModal();
+  });
+
+  // Close on backdrop click
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
 }
 
 function handleDragStart(e: DragEvent) {

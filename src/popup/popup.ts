@@ -104,14 +104,28 @@ function renderPage() {
       ?.addEventListener("click", () => {
         chrome.tabs.create({ url: search.url });
       });
+
+    document
+      .getElementById(`delete-${search.id}`)
+      ?.addEventListener("click", async () => {
+        await StorageManager.deleteSearch(search.id);
+        allSearches = (await StorageManager.getAllSearches()).sort(
+          (a, b) => a.order - b.order,
+        );
+        const totalPages = Math.ceil(allSearches.length / ITEMS_PER_PAGE);
+        if (currentPage > totalPages && currentPage > 1) {
+          currentPage = totalPages;
+        }
+        renderPage();
+      });
   });
 }
 
 function createSearchItem(search: SavedSearch): string {
   const date = new Date(search.timestamp).toLocaleDateString();
   return `
-    <div class="p-3 bg-white border rounded-lg hover:shadow-md transition-shadow">
-      <div class="flex justify-between items-start">
+    <div class="p-3 bg-white border rounded-lg hover:shadow-md transition-shadow group">
+      <div class="flex justify-between items-start gap-2">
         <div class="flex-1">
           <button id="open-${search.id}" class="text-sm font-medium text-blue-600 hover:underline text-left">
             ${escapeHtml(search.title)}
@@ -119,6 +133,14 @@ function createSearchItem(search: SavedSearch): string {
           <p class="text-xs text-gray-500 mt-1">${date}</p>
           ${search.notes ? `<p class="text-xs text-gray-600 mt-1">${escapeHtml(search.notes)}</p>` : ""}
         </div>
+        <button id="delete-${search.id}" title="delete" class="mt-0.5 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
       </div>
     </div>
   `;

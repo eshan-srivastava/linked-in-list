@@ -25,7 +25,7 @@ class LinkedInOverlay {
   }
 
   private isSearchPage(): boolean {
-    return window.location.href.includes("/search/");
+    return LinkedInSearchParser.isSearchUrl(window.location.href);
   }
 
   private createOverlay() {

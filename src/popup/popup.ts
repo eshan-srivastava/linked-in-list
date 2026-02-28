@@ -2,7 +2,7 @@ import { StorageManager } from "../utils/storage";
 import { SavedSearch } from "../utils/types";
 import { LinkedInSearchParser } from "../utils/parser";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 6;
 let currentPage = 1;
 let allSearches: SavedSearch[] = [];
 
@@ -15,7 +15,7 @@ async function init() {
   // Check active tab and setup Add Current Page button
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const isLinkedInSearch =
-    !!tab?.url && tab.url.includes("linkedin.com/search/");
+    !!tab?.url && LinkedInSearchParser.isSearchUrl(tab.url);
   const addCurrentPageBtn = document.getElementById(
     "addCurrentPage",
   ) as HTMLButtonElement;
@@ -36,7 +36,7 @@ async function init() {
       active: true,
       currentWindow: true,
     });
-    if (!currentTab?.url || !currentTab.url.includes("linkedin.com/search/")) {
+    if (!currentTab?.url || !LinkedInSearchParser.isSearchUrl(currentTab.url)) {
       return; // Should not happen since button is disabled, but safety check
     }
 
@@ -75,6 +75,33 @@ async function init() {
       renderPage();
     }
   });
+
+  // Modal setup
+  const notesModal = document.getElementById("notesModal")!;
+  const closeModal = () => {
+    notesModal.classList.add("hidden");
+    notesModal.classList.remove("flex");
+  };
+
+  document.getElementById("closeModal")?.addEventListener("click", closeModal);
+  document
+    .getElementById("modalCloseBtn")
+    ?.addEventListener("click", closeModal);
+  notesModal.addEventListener("click", (e) => {
+    if (e.target === notesModal) closeModal();
+  });
+}
+
+function showNotesModal(notes: string) {
+  const modal = document.getElementById("notesModal")!;
+  const content = document.getElementById("modalContentInner")!;
+  content.textContent = notes;
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function getSearchType(url: string): "SEARCH" | "JOB" {
+  return LinkedInSearchParser.getSearchType(url);
 }
 
 function renderPage() {
@@ -118,20 +145,46 @@ function renderPage() {
         }
         renderPage();
       });
+
+    document
+      .getElementById(`notes-${search.id}`)
+      ?.addEventListener("click", () => {
+        showNotesModal(search.notes);
+      });
   });
 }
 
 function createSearchItem(search: SavedSearch): string {
   const date = new Date(search.timestamp).toLocaleDateString();
+  const type = getSearchType(search.url);
+  const typeClasses =
+    type === "JOB"
+      ? "bg-orange-100 text-orange-800"
+      : "bg-blue-100 text-blue-800";
+
   return `
     <div class="p-3 bg-white border rounded-lg hover:shadow-md transition-shadow group">
       <div class="flex justify-between items-start gap-2">
         <div class="flex-1">
-          <button id="open-${search.id}" class="text-sm font-medium text-blue-600 hover:underline text-left">
-            ${escapeHtml(search.title)}
-          </button>
-          <p class="text-xs text-gray-500 mt-1">${date}</p>
-          ${search.notes ? `<p class="text-xs text-gray-600 mt-1">${escapeHtml(search.notes)}</p>` : ""}
+          <div class="flex items-center gap-2">
+            <button id="open-${search.id}" class="text-sm font-medium text-blue-600 hover:underline text-left">
+              ${escapeHtml(search.title)}
+            </button>
+            <span class="px-1.5 py-0.5 text-[8px] font-bold uppercase rounded ${typeClasses}">
+              ${type}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 mt-1">
+            <p class="text-[10px] text-gray-500">${date}</p>
+            ${
+              search.notes
+                ? `
+              <button id="notes-${search.id}" class="text-[10px] text-blue-500 font-bold uppercase hover:underline">
+                View Notes
+              </button>`
+                : ""
+            }
+          </div>
         </div>
         <button id="delete-${search.id}" title="delete" class="mt-0.5 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

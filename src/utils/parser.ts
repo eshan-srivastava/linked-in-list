@@ -21,6 +21,17 @@ export class LinkedInSearchParser {
     "6": "Executive",
   };
 
+  static isSearchUrl(url: string): boolean {
+    return (
+      url.includes("linkedin.com/search/") ||
+      url.includes("linkedin.com/jobs/search/")
+    );
+  }
+
+  static getSearchType(url: string): "SEARCH" | "JOB" {
+    return url.includes("linkedin.com/jobs/search/") ? "JOB" : "SEARCH";
+  }
+
   static parseUrl(url: string): ParsedParams {
     const urlObj = new URL(url);
     const params = urlObj.searchParams;

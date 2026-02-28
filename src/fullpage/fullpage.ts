@@ -1,5 +1,6 @@
 import { StorageManager } from "../utils/storage";
 import { SavedSearch } from "../utils/types";
+import { LinkedInSearchParser } from "../utils/parser";
 
 let searches: SavedSearch[] = [];
 let filteredSearches: SavedSearch[] = [];
@@ -13,6 +14,10 @@ async function init() {
   setupEventListeners();
   setupUniversalModalListeners();
   setupClickOutsideListeners();
+}
+
+function getSearchType(url: string): "SEARCH" | "JOB" {
+  return LinkedInSearchParser.getSearchType(url);
 }
 
 function refreshList() {
@@ -52,6 +57,12 @@ function renderSearches() {
 
 function createSearchCard(searchItem: SavedSearch): string {
   const date = new Date(searchItem.timestamp).toLocaleString();
+  const type = getSearchType(searchItem.url);
+  const typeClasses =
+    type === "JOB"
+      ? "bg-orange-100 text-orange-800"
+      : "bg-blue-100 text-blue-800";
+
   return `
     <div 
       id="card-${searchItem.id}" 
@@ -61,9 +72,14 @@ function createSearchCard(searchItem: SavedSearch): string {
     >
       <div class="flex justify-between items-start">
         <div class="flex-1">
-          <a href="${searchItem.url}" target="_blank" class="text-lg font-medium text-blue-600 hover:underline">
-            ${escapeHtml(searchItem.title)}
-          </a>
+          <div class="flex items-center gap-2">
+            <a href="${searchItem.url}" target="_blank" class="text-lg font-medium text-blue-600 hover:underline">
+              ${escapeHtml(searchItem.title)}
+            </a>
+            <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded ${typeClasses}">
+              ${type}
+            </span>
+          </div>
           <p class="text-sm text-gray-500 mt-1">${date}</p>
           ${searchItem.notes ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(searchItem.notes)}</p>` : ""}
           <button id="edit-notes-${searchItem.id}" class="text-xs text-blue-500 hover:underline mt-2">

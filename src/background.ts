@@ -2,7 +2,7 @@ import { StorageManager } from "./utils/storage";
 import { LinkedInSearchParser } from "./utils/parser";
 
 function isLinkedInSearch(url: string): boolean {
-  return url.includes("linkedin.com/search/");
+  return LinkedInSearchParser.isSearchUrl(url);
 }
 
 async function updateBadgeForTab(tab: chrome.tabs.Tab) {

@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div id="searchList" class="space-y-2 mb-4 flex-1 overflow-y-auto">
+        <div id="searchList" class="space-y-2 mb-4 flex-1">
             <!-- APPEND LIST ITEMS HERE -->
         </div>
 
@@ -36,6 +36,30 @@
             <button id="nextPage" class="px-2 py-1 border rounded hover:bg-gray-100">Next</button>
         </div>
     </div>
+
+    <!-- Notes Modal -->
+    <div id="notesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-xs overflow-hidden transform transition-all">
+            <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-white">
+                <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Search Notes</h3>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="modalContentInner"
+                class="px-4 py-4 text-[11px] text-gray-700 whitespace-pre-wrap max-h-[60vh] overflow-y-auto bg-white">
+                <!-- Notes will be injected here -->
+            </div>
+            <div class="px-4 py-3 bg-gray-50 flex justify-end">
+                <button id="modalCloseBtn"
+                    class="px-3 py-1 text-[10px] font-bold uppercase text-gray-500 hover:text-gray-800 transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module" src="./popup.ts"></script>
 </body>

@@ -6,9 +6,12 @@ A lightweight **bookmark manager for LinkedIn saved searches**. Save the search 
 
 - **One-keystroke save**: save the currently open LinkedIn search into the extension.
 - **On-page quick save**: a small floating `+ / ✓` button appears on LinkedIn search pages.
+- **Direct addition**: manually add custom search entries directly from the extension popup window.
 - **Toolbar badge indicator**: on LinkedIn search pages the extension icon shows:
   - `+` when the search isn’t saved yet
   - `✓` when it’s already saved
+- **Job search capability**: seamlessly save and manage both regular LinkedIn searches and LinkedIn job searches.
+- **Search type labels**: visual tags on your saved items clearly indicate whether they are a general "Search" or a "Job Search".
 - **Popup list**: browse saved searches with pagination and open them in a new tab.
 - **Full View manager**:
   - drag-and-drop reorder
@@ -27,11 +30,13 @@ A lightweight **bookmark manager for LinkedIn saved searches**. Save the search 
 
 ## What counts as a “search”?
 
-The extension treats any URL under `linkedin.com/search/` as a search page and can save it.
+The extension supports both general LinkedIn searches (URLs under `linkedin.com/search/`) and LinkedIn job searches (URLs under `linkedin.com/jobs/search/`).
 
 Saved entries include:
-- **url**: the full search URL
+
+- **url**: the full search or job search URL
 - **title**: generated from URL filters (keywords, location, time posted, remote, etc.); title rewriting support is being expanded over time
+- **type**: indicates whether the saved entry is a regular "Search" or a "Job Search", displayed as a visual badge
 - **notes**: optional free text you add later
 - **timestamp** and **order**: used for display and sorting
 
@@ -47,6 +52,7 @@ npm run build
 ```
 
 Then in Chrome:
+
 - Go to **Manage extensions** (`chrome://extensions/`)
 - Enable **Developer mode**
 - Click **Load unpacked**
@@ -70,4 +76,3 @@ Load the `dist` folder as an unpacked extension (same as above). When you change
 ## License
 
 MIT
-

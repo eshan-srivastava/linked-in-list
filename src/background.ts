@@ -31,15 +31,7 @@ async function saveCurrentSearch(url: string) {
 
   await StorageManager.saveSearch({ url, title, notes: "" });
 
-  // update badge to show that we saved the search
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true }); //idk if we have a better condition
-  if (tabs[0]?.id) {
-    chrome.action.setBadgeText({ text: "+", tabId: tabs[0].id });
-    chrome.action.setBadgeBackgroundColor({
-      color: "#10B981",
-      tabId: tabs[0].id,
-    });
-  }
+  // Badge updating is now centrally handled by chrome.storage.onChanged listener.
 }
 
 // Starts the loop to add listener for extension badge if tab switch is complete
@@ -86,6 +78,18 @@ chrome.bookmarks.onCreated.addListener(async (_, bookmark) => {
     const exists = await StorageManager.searchExistsByUrl(bookmark.url);
     if (!exists) {
       await saveCurrentSearch(bookmark.url);
+    }
+  }
+});
+
+// Update badges when storage changes
+chrome.storage.onChanged.addListener(async (changes, namespace) => {
+  if (namespace === "local" && changes.linkedinsearches) {
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.url && isLinkedInSearch(tab.url)) {
+        await updateBadgeForTab(tab);
+      }
     }
   }
 });

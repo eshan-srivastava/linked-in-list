@@ -57,7 +57,7 @@ async function init() {
     allSearches = (await StorageManager.getAllSearches()).sort(
       (a, b) => a.order - b.order,
     );
-    currentPage = 1; // Reset to first page to show the new item
+    // Don't reset currentPage. Let the user stay on the same page they were on.
     renderPage();
   });
 

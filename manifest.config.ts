@@ -6,28 +6,17 @@ export default defineManifest({
   name: pkg.name,
   version: pkg.version,
   icons: {
-    16: "icon16.jpeg",
-    48: "icon48.jpeg",
-    128: "icon128.jpeg",
+    16: "icon128.png",
+    48: "icon128.png",
+    128: "icon128.png",
   },
-  permissions: [
-    // 'contentSettings', Ideally i can work without this
-    // "sidePanel",
-    "storage",
-    "bookmarks",
-    "activeTab",
-  ],
+  permissions: ["storage", "bookmarks", "activeTab"],
   host_permissions: ["https://www.linkedin.com/*"],
   background: {
     type: "module",
     service_worker: "src/background.ts",
   },
   action: {
-    default_icon: {
-      16: "icon16.jpeg",
-      48: "icon48.jpeg",
-      128: "icon128.jpeg",
-    },
     default_popup: "src/popup/popup.html",
   },
   content_scripts: [

@@ -1,12 +1,13 @@
 **LinkedIn Search Saver**
 
 A lightweight **bookmark manager for LinkedIn saved searches**. Save the search you’re currently viewing, auto-generate a readable title from the URL filters, and keep an ordered list you can revisit later.
+Currently not on chrome extension web store, please use load unpacked extension (see instructions in [Installation](#install-unpacked)). I don't see any point of publishing to the web store but if there is some genuine merit then put it in Issues, I would think about it 🗿
 
 ## Features
 
 - **One-keystroke save**: save the currently open LinkedIn search into the extension.
 - **On-page quick save**: a small floating `+ / ✓` button appears on LinkedIn search pages.
-- **Direct addition**: manually add custom search entries directly from the extension popup window.
+- **Direct addition**: manually add current search entry directly from the extension popup window.
 - **Toolbar badge indicator**: on LinkedIn search pages the extension icon shows:
   - `+` when the search isn’t saved yet
   - `✓` when it’s already saved
@@ -72,6 +73,17 @@ Load the `dist` folder as an unpacked extension (same as above). When you change
 
 - Saved searches and settings are stored locally using `chrome.storage.local`.
 - No server component; nothing is uploaded by this project.
+
+## Stuff that can be added but I digress
+
+- Chrome extension store publishing - would need to give 5 dollars
+- Improved vocabulary of job titles - currently there are only generic ones for SDE, SWE etc
+- Improved coverage of filters - not all linked filters are covered currently but covering them all would take too much time. For example somehow getting companyId list and then use it on `f_C` query param
+
+## Stuff that can be added but I would need to cover server costs
+
+- Optional cross device sync per google account
+- AI based improvement on search terms (feed search URLs and get a good search term)
 
 ## License
 

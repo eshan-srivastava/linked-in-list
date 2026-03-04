@@ -1,19 +1,19 @@
 **LinkedIn Search Saver**
 
-A lightweight **bookmark manager for LinkedIn saved searches**. Save the search you’re currently viewing, auto-generate a readable title from the URL filters, and keep an ordered list you can revisit later.
+A lightweight **bookmark manager for LinkedIn saved searches**.
+Save the search you’re currently viewing into an ordered list you can revisit later and customise to your liking.
+
 Currently not on chrome extension web store, please use load unpacked extension (see instructions in [Installation](#install-unpacked)). I don't see any point of publishing to the web store but if there is some genuine merit then put it in Issues, I would think about it 🗿
 
 ## Features
 
-- **One-keystroke save**: save the currently open LinkedIn search into the extension.
-- **On-page quick save**: a small floating `+ / ✓` button appears on LinkedIn search pages.
+- **One-keystroke save**: save the currently open LinkedIn search into the extension by the shortcut Alt+Shift+D
 - **Direct addition**: manually add current search entry directly from the extension popup window.
 - **Toolbar badge indicator**: on LinkedIn search pages the extension icon shows:
   - `+` when the search isn’t saved yet
   - `✓` when it’s already saved
 - **Job search capability**: seamlessly save and manage both regular LinkedIn searches and LinkedIn job searches.
 - **Search type labels**: visual tags on your saved items clearly indicate whether they are a general "Search" or a "Job Search".
-- **Popup list**: browse saved searches with pagination and open them in a new tab.
 - **Full View manager**:
   - drag-and-drop reorder
   - add/edit notes

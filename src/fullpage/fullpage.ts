@@ -129,8 +129,8 @@ function showOptionsDropdown(anchor: HTMLElement, savedSearch: SavedSearch) {
   const optsNotesBtnText = document.getElementById("optsNotesBtnText")!;
   optsNotesBtnText.textContent = savedSearch.notes ? "Edit notes" : "Add notes";
 
-  dropdown.style.top = `${rect.bottom + window.scrollY + 5}px`;
-  dropdown.style.left = `${rect.right - 192}px`; // 192px is w-48
+  dropdown.style.top = `${rect.top + window.scrollY}px`;
+  dropdown.style.left = `${rect.left + window.scrollX - 192 - 8}px`; // 192px is w-48, 8px gap
   dropdown.classList.remove("hidden");
 }
 
@@ -199,8 +199,8 @@ function showModal(title: string, search: SavedSearch, type: string) {
     modalContent.innerHTML = `
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">Search Title</label>
-        <input type="text" id="modalInput" maxlength="256" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${escapeHtml(search.title)}">
-        <p class="text-xs text-gray-400 text-right"><span id="charCount">0</span>/256</p>
+        <input type="text" id="modalInput" maxlength="72" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${escapeHtml(search.title)}">
+        <p class="text-xs text-gray-400 text-right"><span id="charCount">0</span>/72</p>
       </div>
     `;
     const input = document.getElementById("modalInput") as HTMLInputElement;
@@ -214,8 +214,8 @@ function showModal(title: string, search: SavedSearch, type: string) {
     modalContent.innerHTML = `
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">Notes</label>
-        <textarea id="modalTextarea" maxlength="1024" rows="5" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none">${escapeHtml(search.notes)}</textarea>
-        <p class="text-xs text-gray-400 text-right"><span id="charCount">0</span>/1024</p>
+        <textarea id="modalTextarea" maxlength="128" rows="5" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none">${escapeHtml(search.notes)}</textarea>
+        <p class="text-xs text-gray-400 text-right"><span id="charCount">0</span>/128</p>
       </div>
     `;
     const textarea = document.getElementById(
@@ -279,7 +279,7 @@ function setupUniversalModalListeners() {
 
     if (currentModalType === "editTitle") {
       const input = document.getElementById("modalInput") as HTMLInputElement;
-      const title = input.value.trim();
+      const title = input.value.trim().slice(0, 72);
       if (title) {
         await StorageManager.updateSearch(currentModalSearch.id, { title });
       }
@@ -287,7 +287,7 @@ function setupUniversalModalListeners() {
       const textarea = document.getElementById(
         "modalTextarea",
       ) as HTMLTextAreaElement;
-      const notes = textarea.value.trim();
+      const notes = textarea.value.trim().slice(0, 128);
       await StorageManager.updateSearch(currentModalSearch.id, { notes });
     }
 
@@ -394,8 +394,6 @@ function setupEventListeners() {
     .getElementById("settingsBtn")
     ?.addEventListener("click", async () => {
       const settings = await StorageManager.getSettings();
-      (document.getElementById("preventBookmark") as HTMLInputElement).checked =
-        settings.preventNativeBookmark;
       (document.getElementById("titleFormat") as HTMLSelectElement).value =
         settings.titleFormat;
       document.getElementById("settingsModal")?.classList.remove("hidden");
@@ -409,10 +407,9 @@ function setupEventListeners() {
   document
     .getElementById("saveSettings")
     ?.addEventListener("click", async () => {
+      const settings = await StorageManager.getSettings();
       await StorageManager.updateSettings({
-        preventNativeBookmark: (
-          document.getElementById("preventBookmark") as HTMLInputElement
-        ).checked,
+        preventNativeBookmark: settings.preventNativeBookmark,
         titleFormat: (
           document.getElementById("titleFormat") as HTMLSelectElement
         ).value as "compact" | "verbose",

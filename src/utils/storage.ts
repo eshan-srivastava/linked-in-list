@@ -3,99 +3,114 @@
 // also technically chrome storage API is static and not instance based. Multiple storage manager instances will end up communicating with same chrome API
 
 import { SavedSearch, AppSettings, StorageData } from "./types";
-import { version } from '../../package.json'
+import { version } from "../../package.json";
 
 // Will be used by the worker
 export class StorageManager {
-    private static SEARCH_KEY = "linkedinsearches";
-    private static SETTINGS_KEY = "appsettings"
+  private static SEARCH_KEY = "linkedinsearches";
+  private static SETTINGS_KEY = "appsettings";
 
-    static async getAllSearches(): Promise<SavedSearch[]> {
-        const result = await chrome.storage.local.get(this.SEARCH_KEY);
-        return (result[this.SEARCH_KEY] as SavedSearch[]) || [];
+  static async getAllSearches(): Promise<SavedSearch[]> {
+    const result = await chrome.storage.local.get(this.SEARCH_KEY);
+    return (result[this.SEARCH_KEY] as SavedSearch[]) || [];
+  }
+
+  static async getSearch(id: string): Promise<SavedSearch | undefined> {
+    const searches = await this.getAllSearches();
+    const search = searches.find((s) => s.id === id);
+    return search;
+  }
+
+  static async searchExistsByUrl(url: string): Promise<boolean> {
+    const searches = await this.getAllSearches();
+    return searches.some((s) => s.url === url);
+  }
+
+  static async saveSearch(
+    search: Omit<SavedSearch, "id" | "timestamp" | "order">,
+  ): Promise<void> {
+    const searches = await this.getAllSearches();
+    const maxOrder =
+      searches.length > 0 ? Math.max(...searches.map((s) => s.order ?? 0)) : -1;
+    const newSearch: SavedSearch = {
+      ...search,
+      title: search.title.slice(0, 72),
+      notes: search.notes ? search.notes.slice(0, 128) : "",
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      order: maxOrder + 1,
+    };
+    searches.push(newSearch);
+    await chrome.storage.local.set({ [this.SEARCH_KEY]: searches });
+  }
+
+  static async updateSearch(
+    id: string,
+    updates: Partial<SavedSearch>,
+  ): Promise<void> {
+    const searches = await this.getAllSearches();
+    const index = searches.findIndex((s) => s.id === id);
+    if (index !== -1) {
+      const safeUpdates = { ...updates };
+      if (typeof safeUpdates.title === "string")
+        safeUpdates.title = safeUpdates.title.slice(0, 72);
+      if (typeof safeUpdates.notes === "string")
+        safeUpdates.notes = safeUpdates.notes.slice(0, 128);
+      searches[index] = { ...searches[index], ...safeUpdates }; //spread original and then spread updates
+      await chrome.storage.local.set({ [this.SEARCH_KEY]: searches });
     }
+  }
 
-    static async getSearch(id: string): Promise<SavedSearch | undefined> {
-        const searches = await this.getAllSearches();
-        const search = searches.find(s => s.id === id)
-        return search
+  static async deleteSearch(id: string): Promise<void> {
+    const searches = await this.getAllSearches();
+    // keep all the ones not getting deleted
+    // orderId rebalancing can exist as reorderSearches call by frontend
+    const filtered = searches.filter((s) => s.id !== id);
+
+    await chrome.storage.local.set({ [this.SEARCH_KEY]: filtered });
+  }
+
+  static async reorderSearches(orderIds: string[]): Promise<void> {
+    const searches = await this.getAllSearches();
+    const reordered = orderIds.map((id, index) => {
+      const search = searches.find((s) => s.id === id);
+      return { ...search, order: index };
+    });
+    await chrome.storage.local.set({ [this.SEARCH_KEY]: reordered });
+  }
+
+  // Settings Storage
+  static async getSettings(): Promise<AppSettings> {
+    const result = await chrome.storage.local.get(this.SETTINGS_KEY);
+    return (
+      (result[this.SETTINGS_KEY] as AppSettings) || {
+        preventNativeBookmark: false,
+        titleFormat: "compact",
+      }
+    );
+  }
+
+  static async updateSettings(settings: Partial<AppSettings>): Promise<void> {
+    const current = await this.getSettings();
+    await chrome.storage.local.set({
+      [this.SETTINGS_KEY]: { ...current, ...settings },
+    });
+  }
+
+  // Export Import JSON searches
+  static async exportData(): Promise<string> {
+    const searches = await this.getAllSearches();
+    const settings = await this.getSettings();
+    return JSON.stringify({ searches, settings, version: version });
+  }
+
+  static async importData(jsonString: string): Promise<void> {
+    const data: StorageData & { version: string } = JSON.parse(jsonString);
+    if (data.searches) {
+      await chrome.storage.local.set({ [this.SEARCH_KEY]: data.searches });
     }
-
-    static async searchExistsByUrl(url: string): Promise<boolean> {
-        const searches = await this.getAllSearches();
-        return searches.some(s => s.url === url);
+    if (data.settings) {
+      await chrome.storage.local.set({ [this.SETTINGS_KEY]: data.settings });
     }
-
-    static async saveSearch(search: Omit<SavedSearch, "id" | "timestamp" | "order">): Promise<void> {
-        const searches = await this.getAllSearches();
-        const newSearch: SavedSearch = {
-            ...search,
-            id: crypto.randomUUID(),
-            timestamp: Date.now(),
-            order: searches.length
-        }
-        searches.push(newSearch)
-        await chrome.storage.local.set({ [this.SEARCH_KEY]: searches })
-    }
-
-    static async updateSearch(id: string, updates: Partial<SavedSearch>): Promise<void> {
-        const searches = await this.getAllSearches();
-        const index = searches.findIndex(s => s.id === id)
-        if (index !== -1) {
-            searches[index] = { ...searches[index], ...updates} //spread original and then spread updates
-            await chrome.storage.local.set({ [this.SEARCH_KEY]: searches })
-        }
-    }
-
-    static async deleteSearch(id: string): Promise<void> {
-        const searches = await this.getAllSearches();
-        // keep all the ones not getting deleted
-        // orderId rebalancing can exist as reorderSearches call by frontend
-        const filtered = searches.filter(s => s.id !== id)
-
-        await chrome.storage.local.set({ [this.SEARCH_KEY]: filtered })
-    }
-
-    static async reorderSearches(orderIds: string[]): Promise<void> {
-        const searches = await this.getAllSearches();
-        const reordered = orderIds.map((id, index) => {
-            const search = searches.find(s => s.id === id);
-            return { ...search, order: index};
-        });
-        await chrome.storage.local.set({ [this.SEARCH_KEY]: reordered })
-    }
-
-    // Settings Storage
-    static async getSettings() : Promise<AppSettings>{
-        const result = await chrome.storage.local.get(this.SETTINGS_KEY)
-        return (result[this.SETTINGS_KEY] as AppSettings) || {
-            preventNativeBookmark: false,
-            titleFormat: 'compact'
-        }
-    }
-
-    static async updateSettings(settings: Partial<AppSettings>): Promise<void> {
-        const current = await this.getSettings();
-        await chrome.storage.local.set({
-            [this.SETTINGS_KEY]: {...current, ...settings}, 
-        });
-    }
-
-
-    // Export Import JSON searches
-    static async exportData(): Promise<string> {
-        const searches = await this.getAllSearches();
-        const settings = await this.getSettings();
-        return JSON.stringify({searches, settings, version: version })
-    }
-
-    static async importData(jsonString: string): Promise<void> {
-        const data: StorageData & { version: string } = JSON.parse(jsonString);
-        if (data.searches) {
-            await chrome.storage.local.set({ [this.SEARCH_KEY]: data.searches});
-        }
-        if (data.settings) {
-            await chrome.storage.local.set({ [this.SETTINGS_KEY]: data.settings });
-        }
-    }
+  }
 }

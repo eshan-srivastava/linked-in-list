@@ -11,6 +11,15 @@ class LinkedInOverlay {
   constructor() {
     this.init();
     this.observeUrlChanges();
+    this.observeStorageChanges();
+  }
+
+  private observeStorageChanges() {
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === "local" && changes.linkedinsearches) {
+        this.updateState();
+      }
+    });
   }
 
   private async init() {

@@ -4,6 +4,7 @@ import pkg from "./package.json";
 export default defineManifest({
   manifest_version: 3,
   name: pkg.name,
+  description: "Save your LinkedIn searches for quick access later",
   version: pkg.version,
   icons: {
     16: "icon128.png",
@@ -31,7 +32,7 @@ export default defineManifest({
         default: "Alt+Shift+D",
         mac: "Option+Shift+D",
       },
-      description: "Save currently open linked search",
+      description: "Save currently open linkedin search",
     },
   },
 });

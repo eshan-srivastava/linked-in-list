@@ -3,7 +3,7 @@
 A lightweight **bookmark manager for LinkedIn saved searches**.
 Save the search you’re currently viewing into an ordered list you can revisit later and customise to your liking.
 
-Currently not on chrome extension web store, please use load unpacked extension (see instructions in [Installation](#install-unpacked)). I don't see any point of publishing to the web store but if there is some genuine merit then put it in Issues, I would think about it 🗿
+Currently not on chrome extension web store, please use load unpacked extension (see instructions in [Installation](#install-unpacked)). I don't see any point of publishing to the web store but if there is some genuine merit then put it in Issues or DM me, I would think about it 🗿
 
 ## Showcase
 
@@ -66,6 +66,8 @@ Saved entries include:
 
 This project builds a **Manifest V3** Chrome extension.
 
+You can download the zip file from latest release and unzip into an folder. Then point to this folder when loading as unpacked extension.
+
 ### Build from source
 
 ```bash
@@ -80,7 +82,7 @@ Then in Chrome:
 - Click **Load unpacked**
 - Select the generated `dist` folder
 
-`npm run build` also produces a zipped artifact in `release/` (useful for sharing the build output).
+`npm run build` also produces a zipped artifact in `release/` which is the same as latest release's zip file.
 
 ### Development
 

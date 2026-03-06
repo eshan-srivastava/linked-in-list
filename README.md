@@ -5,9 +5,30 @@ Save the search you’re currently viewing into an ordered list you can revisit 
 
 Currently not on chrome extension web store, please use load unpacked extension (see instructions in [Installation](#install-unpacked)). I don't see any point of publishing to the web store but if there is some genuine merit then put it in Issues, I would think about it 🗿
 
+## Showcase
+
+### Popup View
+
+| ![Popup 1](screenshots/popup1.png) | ![Popup 2](screenshots/popup2.png) |
+| :--------------------------------: | :--------------------------------: |
+|            Quick Access            |          Action Shortcuts          |
+
+### Full Page Manager
+
+| ![Full Page 1](screenshots/fullpage1.png) | ![Full Page 2](screenshots/fullpage2.png) |
+| :---------------------------------------: | :---------------------------------------: |
+|              Dashboard View               |           Management Interface            |
+
+### Edit & Details
+
+| ![Details 1](screenshots/details1.png) | ![Details 2](screenshots/details2.png) | ![Details 3](screenshots/details3.png) |
+| :------------------------------------: | :------------------------------------: | :------------------------------------: |
+|               Edit Title               |               Add Notes                |             View Metadata              |
+
 ## Features
 
 - **One-keystroke save**: save the currently open LinkedIn search into the extension by the shortcut Alt+Shift+D
+- **Quick add on the page**: or you can save the currently open LinkedIn search by clicking on the plus button at the bottom of supported pages
 - **Direct addition**: manually add current search entry directly from the extension popup window.
 - **Toolbar badge indicator**: on LinkedIn search pages the extension icon shows:
   - `+` when the search isn’t saved yet
